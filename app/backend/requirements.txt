@@ -15,3 +15,6 @@ fastapi
 uvicorn
 pydantic
 scikit-learn
+# SCAPES's FlowInference.py imports IPython.display at module load time
+# (notebook-era artifact). Install it so the import succeeds in a server context.
+ipython
