@@ -59,6 +59,25 @@ COPY --chown=user:user modules ./modules
 # resolved from repo_root = parents[3] of the file. The COPY layout above
 # satisfies that.
 
+# ---- Runtime assets (model checkpoints + source WAVs) ---------------------
+# Pulled from a public HF model repo so the Space repo itself stays small.
+# Layout in the assets repo mirrors the in-container target paths:
+#   models/Full_150e/checkpoints/*    ->  inference/models/Full_150e/checkpoints/*
+#   assets/*.wav                      ->  inference/assets/*.wav
+# Override ASSETS_REPO at build time (--build-arg) to point at a fork.
+ARG ASSETS_REPO=JordiFabregat1/s103-assets
+ARG ASSETS_REVISION=main
+ENV ASSETS_REPO=${ASSETS_REPO} \
+    ASSETS_REVISION=${ASSETS_REVISION}
+RUN python -c "import os; from huggingface_hub import snapshot_download; \
+    snapshot_download( \
+        repo_id=os.environ['ASSETS_REPO'], \
+        repo_type='model', \
+        revision=os.environ['ASSETS_REVISION'], \
+        local_dir='/home/user/app/app/backend/inference', \
+    )" \
+ && rm -rf /home/user/app/app/backend/inference/.cache
+
 WORKDIR /home/user/app/app/backend
 
 EXPOSE 7860
