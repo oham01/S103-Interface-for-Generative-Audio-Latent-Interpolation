@@ -16,6 +16,8 @@ env/
 conda-env/
 node_modules/
 .env*
+# Keep .env.example tracked so deployments document required env vars.
+!.env.example
 
 # =========================
 # ML model files (VERY IMPORTANT FOR YOU)
@@ -25,13 +27,15 @@ node_modules/
 *.ckpt
 *.onnx
 *.pkl
+*.npz
 
 # HuggingFace / checkpoints
 checkpoints/
 models/
 model_weights/
 app/backend/inference/weights/
-modules/
+# NOTE: do NOT ignore `modules/` -- it contains the SCAPES submodule, which
+# git tracks as a commit pointer (not the actual files).
 
 # =========================
 # Data / audio (your project specific)

@@ -1,4 +1,9 @@
-const API_BASE = "http://localhost:8000";
+// Base URL for the backend API.
+// Set VITE_API_BASE_URL at build time (e.g. on Vercel) to point at the
+// deployed FastAPI service. Falls back to the local dev server.
+const API_BASE = (
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"
+).replace(/\/$/, "");
 
 export type SoundPoint = {
   id: number;
