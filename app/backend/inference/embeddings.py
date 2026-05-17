@@ -149,9 +149,27 @@ def get_sound_layout(force: bool = False) -> List[SoundPoint]:
             with LAYOUT_CACHE.open("r", encoding="utf-8") as f:
                 cached = json.load(f)
             cached_filenames = [item["filename"] for item in cached]
-            if cached_filenames == filenames:
+            # Compare as sets so cache hits regardless of ordering differences
+            # between the cache file and `_list_wav_files()`'s sort order.
+            # (Case-sensitive vs case-insensitive sort produced false misses
+            # after merging branches with different tsne_layout.json variants.)
+            if set(cached_filenames) == set(filenames):
                 logger.info("Returning cached t-SNE layout.")
-                return [SoundPoint(**item) for item in cached]
+                # Re-emit the cache entries sorted to match the current
+                # _list_wav_files() order, so SoundPoint.id remains stable for
+                # the frontend across requests even if the cache was written
+                # with a different ordering.
+                by_name = {item["filename"]: item for item in cached}
+                return [
+                    SoundPoint(
+                        id=i,
+                        name=by_name[name]["name"],
+                        filename=name,
+                        x=by_name[name]["x"],
+                        y=by_name[name]["y"],
+                    )
+                    for i, name in enumerate(filenames)
+                ]
         except Exception as exc:
             logger.warning(f"Failed to read layout cache, recomputing: {exc}")
 
